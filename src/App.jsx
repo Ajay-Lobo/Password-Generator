@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import "./App.css";
 
 function App() {
@@ -7,17 +7,28 @@ function App() {
   const [characterActive, setCharacterActive] = useState(false);
   const [password, setPassword] = useState("");
 
+  const passwordRef = useRef(null);
   const passwordGenerator = useCallback(() => {
     let pass = "";
     let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     if (numberActive) str += "0123456789";
     if (characterActive) str += "!@#$%^&*()_+";
     for (let i = 1; i <= length; i++) {
-      pass = str.charAt(Math.floor(Math.random() * str.length));
+      pass += str.charAt(Math.floor(Math.random() * str.length+1));
     }
     setPassword(pass);
   }, [length, numberActive, characterActive, setPassword]);
 
+  const copyToClipBoard = useCallback(() => {
+     passwordRef.current.select();
+    // document.execCommand("copy");
+    window.navigator.clipboard.writeText(password);
+  }
+  , [password]);
+
+  useEffect(() => {
+    passwordGenerator()
+  }, [length,numberActive,characterActive,passwordGenerator]);
   return (
     <>
       <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-8 my-8 text-orange-500 bg-gray-800">
@@ -32,8 +43,9 @@ function App() {
             placeholder="Generated password"
             readOnly
             value={password}
+            ref={passwordRef}
           />
-          <button className="bg-orange-500 text-white px-4 font-semibold hover:bg-orange-600 transition-all rounded-r-lg">
+          <button onClick={copyToClipBoard} className="bg-orange-500 text-white px-4 font-semibold hover:bg-orange-600 transition-all rounded-r-lg">
             Copy
           </button>
         </div>
